@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DatePicker для Telegram бота</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/air-datepicker@3.3.5/air-datepicker.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--tg-theme-text-color, #000000);
+        }
+        
+        .datepicker {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .button {
+            padding: 12px 24px;
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: auto;
+        }
+        
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .selected-date {
+            text-align: center;
+            margin: 15px 0;
+            font-weight: bold;
+            color: var(--tg-theme-link-color, #2481cc);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Выберите дату</h1>
+        
+        <div class="selected-date" id="selectedDate">
+            Дата не выбрана
+        </div>
+        
+        <div id="datepicker" class="datepicker"></div>
+        
+        <button class="button" id="confirmButton" disabled>
+            ✅ Выбрать дату
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/air-datepicker@3.3.5/air-datepicker.min.js"></script>
+    <script>
+        // Инициализация Telegram Web App
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
+        
+        // Инициализация календаря
+        const dp = new AirDatepicker('#datepicker', {
+            inline: true,
+            dateFormat: 'dd.MM.yyyy',
+            minDate: new Date(),
+            autoClose: false,
+            onSelect: function({date}) {
+                if (date) {
+                    const formattedDate = date.toLocaleDateString('ru-RU', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    });
+                    
+                    document.getElementById('selectedDate').textContent = formattedDate;
+                    document.getElementById('confirmButton').disabled = false;
+                    
+                    // Сохраняем выбранную дату
+                    window.selectedDate = formattedDate;
+                }
+            }
+        });
+        
+        // Обработчик кнопки подтверждения
+        document.getElementById('confirmButton').addEventListener('click', function() {
+            if (window.selectedDate) {
+                // Отправляем данные в бот
+                Telegram.WebApp.sendData(JSON.stringify({
+                    date: window.selectedDate,
+                    timestamp: new Date().getTime()
+                }));
+                
+                // Закрываем Web App
+                Telegram.WebApp.close();
+            }
+        });
+        
+        // Обработка темы Telegram
+        function updateTheme() {
+            document.body.style.backgroundColor = Telegram.WebApp.backgroundColor;
+            document.body.style.color = Telegram.WebApp.textColor;
+        }
+        
+        Telegram.WebApp.onEvent('themeChanged', updateTheme);
+        updateTheme();
+    </script>
+</body>
+</html>
