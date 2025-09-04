@@ -1,13 +1,439 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Мои проекты</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выбор дат поездки</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/air-datepicker@3.3.5/air-datepicker.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .instructions {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #999999);
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+            border-radius: 12px;
+        }
+
+        .toggle-label {
+            margin: 0 12px;
+            font-size: 14px;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .toggle-label.active {
+            font-weight: bold;
+            color: var(--tg-theme-button-color, #2481cc);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--tg-theme-button-color, #2481cc);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .datepicker {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .selection-info {
+            background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .date-range {
+            text-align: center;
+            font-weight: bold;
+            color: var(--tg-theme-link-color, #2481cc);
+            margin-bottom: 10px;
+        }
+
+        .days-count {
+            text-align: center;
+            font-size: 14px;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .button {
+            padding: 12px 24px;
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .button:disabled {
+            background-color: #ccc !important;
+            color: #666 !important;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .button-active {
+            background: var(--tg-theme-button-color, #2481cc) !important;
+            color: var(--tg-theme-button-text-color, #ffffff) !important;
+            opacity: 1 !important;
+            cursor: pointer !important;
+        }
+
+        .reset-button {
+            background: var(--tg-theme-destructive-color, #ff3b30);
+            margin-top: 5px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Добро пожаловать!</h1>
-    <ul>
-        <li><a href="/single_day/single_day.html">Поездка на один день</a></li>
-        <li><a href="/some_days/some_days.html">Поездка на несколько дней</a></li>
-    </ul>
+    <div class="container">
+        <h1>📅 Выберите даты поездки</h1>
+
+        <div class="instructions" id="instructions">
+            Выберите дату начала, затем дату окончания события
+        </div>
+
+        <div class="toggle-container">
+            <span class="toggle-label active" id="multipleDaysLabel">Несколько дней</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="oneDayToggle">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label" id="oneDayLabel">Один день</span>
+        </div>
+
+        <div class="selection-info" id="selectionInfo" style="display: none;">
+            <div class="date-range" id="dateRange">
+                Дата начала - Дата окончания
+            </div>
+            <div class="days-count" id="daysCount">
+                Продолжительность: 0 дней
+            </div>
+        </div>
+
+        <div id="datepicker" class="datepicker"></div>
+
+        <button class="button" id="confirmButton" disabled>
+            ✅ Подтвердить даты
+        </button>
+
+        <button class="button reset-button" id="resetButton">
+            🔄 Сбросить выбор
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/air-datepicker@3.3.5/air-datepicker.min.js"></script>
+    <script>
+        // Инициализация Telegram Web App
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
+
+        let selectedDates = {
+            start: null,
+            end: null
+        };
+
+        let isOneDayMode = false;
+        let dp;
+
+        // Инициализация календаря
+        function initDatepicker() {
+            const container = document.getElementById('datepicker');
+            container.innerHTML = ''; // Очищаем контейнер
+
+            dp = new AirDatepicker('#datepicker', {
+                inline: true,
+                dateFormat: 'dd.MM.yyyy',
+                minDate: new Date(),
+                range: !isOneDayMode,
+                multipleDatesSeparator: ' - ',
+                autoClose: false,
+                onSelect: function({date, formattedDate}) {
+                    updateSelection(date);
+                }
+            });
+
+            // Восстанавливаем выбранные даты если они есть
+            if (selectedDates.start) {
+                if (isOneDayMode) {
+                    dp.selectDate(selectedDates.start);
+                } else {
+                    if (selectedDates.end) {
+                        dp.selectDate([selectedDates.start, selectedDates.end]);
+                    } else {
+                        dp.selectDate(selectedDates.start);
+                    }
+                }
+            }
+        }
+
+        // Инициализируем календарь при загрузке
+        initDatepicker();
+
+        // Обработчик переключателя
+        document.getElementById('oneDayToggle').addEventListener('change', function(e) {
+            isOneDayMode = e.target.checked;
+
+            // Обновляем активные labels
+            if (isOneDayMode) {
+                document.getElementById('multipleDaysLabel').classList.remove('active');
+                document.getElementById('oneDayLabel').classList.add('active');
+                document.getElementById('instructions').textContent = 'Выберите дату события';
+
+                // В режиме одного дня устанавливаем end = start
+                if (selectedDates.start) {
+                    selectedDates.end = selectedDates.start;
+                    updateInterface();
+                }
+            } else {
+                document.getElementById('multipleDaysLabel').classList.add('active');
+                document.getElementById('oneDayLabel').classList.remove('active');
+                document.getElementById('instructions').textContent = 'Выберите дату начала, затем дату окончания события';
+
+                // В режиме диапазона сбрасываем конечную дату если она равна начальной
+                if (selectedDates.start && selectedDates.end && selectedDates.start.getTime() === selectedDates.end.getTime()) {
+                    selectedDates.end = null;
+                    updateInterface();
+                }
+            }
+
+            // Переинициализируем календарь
+            initDatepicker();
+        });
+
+        // Функция обновления выбора
+        function updateSelection(date) {
+            if (date && date.length > 0) {
+                if (isOneDayMode) {
+                    // РЕЖИМ ОДНОГО ДНЯ: обе даты одинаковые
+                    selectedDates.start = date[0];
+                    selectedDates.end = date[0];
+                } else {
+                    // РЕЖИМ ДИАПАЗОНА
+                    if (date.length === 2) {
+                        selectedDates.start = date[0];
+                        selectedDates.end = date[1];
+                    } else if (date.length === 1) {
+                        selectedDates.start = date[0];
+                        selectedDates.end = null;
+                    }
+                }
+                updateInterface();
+            } else {
+                selectedDates.start = null;
+                selectedDates.end = null;
+                updateInterface();
+            }
+        }
+
+        // Функция обновления интерфейса
+        function updateInterface() {
+            const canConfirm = selectedDates.start && (isOneDayMode || selectedDates.end);
+
+            // Обновляем кнопку подтверждения
+            const confirmButton = document.getElementById('confirmButton');
+            if (canConfirm) {
+                confirmButton.disabled = false;
+                confirmButton.classList.add('button-active');
+                confirmButton.classList.remove('button-inactive');
+            } else {
+                confirmButton.disabled = true;
+                confirmButton.classList.remove('button-active');
+                confirmButton.classList.add('button-inactive');
+            }
+
+            // Обновляем информацию о выборе
+            if (selectedDates.start) {
+                const startFormatted = selectedDates.start.toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+
+                if (isOneDayMode) {
+                    document.getElementById('dateRange').textContent = startFormatted;
+                    document.getElementById('daysCount').textContent = 'Продолжительность: 1 день';
+                } else if (selectedDates.end) {
+                    const endFormatted = selectedDates.end.toLocaleDateString('ru-RU', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    });
+
+                    const timeDiff = selectedDates.end - selectedDates.start;
+                    const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) + 1;
+
+                    document.getElementById('dateRange').textContent = `${startFormatted} - ${endFormatted}`;
+                    document.getElementById('daysCount').textContent = `Продолжительность: ${daysDiff} ${getDaysText(daysDiff)}`;
+                } else {
+                    document.getElementById('dateRange').textContent = `${startFormatted} - Выберите дату окончания`;
+                    document.getElementById('daysCount').textContent = '';
+                }
+
+                document.getElementById('selectionInfo').style.display = 'block';
+            } else {
+                document.getElementById('selectionInfo').style.display = 'none';
+            }
+
+            // Обновляем стили кнопок
+            updateButtonStyles();
+        }
+
+        // Функция для правильного склонения слова "день"
+        function getDaysText(days) {
+            if (days % 10 === 1 && days % 100 !== 11) return 'день';
+            if ([2, 3, 4].includes(days % 10) && ![12, 13, 14].includes(days % 100)) return 'дня';
+            return 'дней';
+        }
+
+        // Функция обновления стилей кнопок
+        function updateButtonStyles() {
+            const confirmButton = document.getElementById('confirmButton');
+            const resetButton = document.getElementById('resetButton');
+
+            if (confirmButton.disabled) {
+                confirmButton.style.backgroundColor = '#ccc';
+                confirmButton.style.color = '#666';
+                confirmButton.style.opacity = '0.6';
+                confirmButton.style.cursor = 'not-allowed';
+            } else {
+                confirmButton.style.backgroundColor = Telegram.WebApp.buttonColor || '#2481cc';
+                confirmButton.style.color = Telegram.WebApp.buttonTextColor || '#ffffff';
+                confirmButton.style.opacity = '1';
+                confirmButton.style.cursor = 'pointer';
+            }
+
+            resetButton.style.backgroundColor = Telegram.WebApp.destructiveColor || '#ff3b30';
+            resetButton.style.color = Telegram.WebApp.buttonTextColor || '#ffffff';
+        }
+
+        // Обработчик кнопки подтверждения
+        document.getElementById('confirmButton').addEventListener('click', function() {
+            if (selectedDates.start && (isOneDayMode || selectedDates.end)) {
+                // Подготавливаем данные для отправки
+                const dataToSend = {
+                    start_date: selectedDates.start.toISOString().split('T')[0],
+                    end_date: isOneDayMode ? selectedDates.start.toISOString().split('T')[0] : selectedDates.end.toISOString().split('T')[0],
+                    start_date_formatted: selectedDates.start.toLocaleDateString('ru-RU'),
+                    end_date_formatted: isOneDayMode ? selectedDates.start.toLocaleDateString('ru-RU') : selectedDates.end.toLocaleDateString('ru-RU'),
+                    duration: isOneDayMode ? 1 : Math.ceil((selectedDates.end - selectedDates.start) / (1000 * 60 * 60 * 24)) + 1,
+                    is_one_day: isOneDayMode
+                };
+
+                // Отправляем данные в бот
+                Telegram.WebApp.sendData(JSON.stringify(dataToSend));
+
+                // Закрываем Web App
+                Telegram.WebApp.close();
+            }
+        });
+
+        // Обработчик кнопки сброса
+        document.getElementById('resetButton').addEventListener('click', function() {
+            if (dp) {
+                dp.clear();
+            }
+            selectedDates.start = null;
+            selectedDates.end = null;
+            document.getElementById('selectionInfo').style.display = 'none';
+            document.getElementById('confirmButton').disabled = true;
+            document.getElementById('oneDayToggle').checked = false;
+            isOneDayMode = false;
+
+            // Обновляем активные labels
+            document.getElementById('multipleDaysLabel').classList.add('active');
+            document.getElementById('oneDayLabel').classList.remove('active');
+
+            document.getElementById('instructions').textContent = 'Выберите дату начала, затем дату окончания события';
+            initDatepicker();
+            updateButtonStyles();
+        });
+
+        // Обработка темы Telegram
+        function updateTheme() {
+            document.body.style.backgroundColor = Telegram.WebApp.backgroundColor;
+            document.body.style.color = Telegram.WebApp.textColor;
+            updateButtonStyles();
+        }
+
+        Telegram.WebApp.onEvent('themeChanged', updateTheme);
+        updateTheme();
+    </script>
 </body>
 </html>
