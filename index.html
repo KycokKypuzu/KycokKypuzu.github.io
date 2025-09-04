@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DatePicker для Telegram бота</title>
+    <title>Выбор интервала дат</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/air-datepicker@3.3.5/air-datepicker.min.css">
     <style>
@@ -30,9 +30,36 @@
             color: var(--tg-theme-text-color, #000000);
         }
         
+        .instructions {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #999999);
+        }
+        
         .datepicker {
             width: 100%;
             margin-bottom: 20px;
+        }
+        
+        .selection-info {
+            background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .date-range {
+            text-align: center;
+            font-weight: bold;
+            color: var(--tg-theme-link-color, #2481cc);
+            margin-bottom: 10px;
+        }
+        
+        .days-count {
+            text-align: center;
+            font-size: 14px;
+            color: var(--tg-theme-text-color, #000000);
         }
         
         .button {
@@ -44,7 +71,7 @@
             font-size: 16px;
             cursor: pointer;
             width: 100%;
-            margin-top: auto;
+            margin-top: 10px;
         }
         
         .button:disabled {
@@ -52,26 +79,37 @@
             cursor: not-allowed;
         }
         
-        .selected-date {
-            text-align: center;
-            margin: 15px 0;
-            font-weight: bold;
-            color: var(--tg-theme-link-color, #2481cc);
+        .reset-button {
+            background: var(--tg-theme-destructive-color, #ff3b30);
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📅 Выберите дату</h1>
+        <h1>📅 Выберите интервал дат</h1>
         
-        <div class="selected-date" id="selectedDate">
-            Дата не выбрана
+        <div class="instructions">
+            Выберите дату начала, затем дату окончания события
+        </div>
+        
+        <div class="selection-info" id="selectionInfo" style="display: none;">
+            <div class="date-range" id="dateRange">
+                Дата начала - Дата окончания
+            </div>
+            <div class="days-count" id="daysCount">
+                Продолжительность: 0 дней
+            </div>
         </div>
         
         <div id="datepicker" class="datepicker"></div>
         
         <button class="button" id="confirmButton" disabled>
-            ✅ Выбрать дату
+            ✅ Подтвердить интервал
+        </button>
+        
+        <button class="button reset-button" id="resetButton">
+            🔄 Сбросить выбор
         </button>
     </div>
 
@@ -81,36 +119,85 @@
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
         
-        // Инициализация календаря
+        let selectedDates = {
+            start: null,
+            end: null
+        };
+
+        // Инициализация календаря с выбором диапазона
         const dp = new AirDatepicker('#datepicker', {
             inline: true,
             dateFormat: 'dd.MM.yyyy',
             minDate: new Date(),
+            range: true, // Включаем выбор диапазона
+            multipleDatesSeparator: ' - ',
             autoClose: false,
-            onSelect: function({date}) {
-                if (date) {
-                    const formattedDate = date.toLocaleDateString('ru-RU', {
+            onSelect: function({date, formattedDate}) {
+                if (date && date.length === 2) {
+                    // Получаем даты начала и окончания
+                    selectedDates.start = date[0];
+                    selectedDates.end = date[1];
+                    
+                    // Форматируем даты для отображения
+                    const startFormatted = selectedDates.start.toLocaleDateString('ru-RU', {
                         day: '2-digit',
                         month: '2-digit',
                         year: 'numeric'
                     });
                     
-                    document.getElementById('selectedDate').textContent = formattedDate;
+                    const endFormatted = selectedDates.end.toLocaleDateString('ru-RU', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    });
+                    
+                    // Рассчитываем количество дней
+                    const timeDiff = selectedDates.end - selectedDates.start;
+                    const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) + 1;
+                    
+                    // Обновляем интерфейс
+                    document.getElementById('dateRange').textContent = `${startFormatted} - ${endFormatted}`;
+                    document.getElementById('daysCount').textContent = `Продолжительность: ${daysDiff} ${getDaysText(daysDiff)}`;
+                    document.getElementById('selectionInfo').style.display = 'block';
                     document.getElementById('confirmButton').disabled = false;
                     
-                    // Сохраняем выбранную дату
-                    window.selectedDate = formattedDate;
+                } else if (date && date.length === 1) {
+                    // Если выбрана только одна дата
+                    selectedDates.start = date[0];
+                    selectedDates.end = null;
+                    
+                    document.getElementById('dateRange').textContent = 'Выберите дату окончания';
+                    document.getElementById('daysCount').textContent = '';
+                    document.getElementById('selectionInfo').style.display = 'block';
+                    document.getElementById('confirmButton').disabled = true;
+                    
+                } else {
+                    // Если ничего не выбрано
+                    selectedDates.start = null;
+                    selectedDates.end = null;
+                    document.getElementById('selectionInfo').style.display = 'none';
+                    document.getElementById('confirmButton').disabled = true;
                 }
             }
         });
         
+        // Функция для правильного склонения слова "день"
+        function getDaysText(days) {
+            if (days % 10 === 1 && days % 100 !== 11) return 'день';
+            if ([2, 3, 4].includes(days % 10) && ![12, 13, 14].includes(days % 100)) return 'дня';
+            return 'дней';
+        }
+        
         // Обработчик кнопки подтверждения
         document.getElementById('confirmButton').addEventListener('click', function() {
-            if (window.selectedDate) {
+            if (selectedDates.start && selectedDates.end) {
                 // Отправляем данные в бот
                 Telegram.WebApp.sendData(JSON.stringify({
-                    date: window.selectedDate,
-                    timestamp: new Date().getTime()
+                    start_date: selectedDates.start.toISOString().split('T')[0], // YYYY-MM-DD
+                    end_date: selectedDates.end.toISOString().split('T')[0],     // YYYY-MM-DD
+                    start_date_formatted: selectedDates.start.toLocaleDateString('ru-RU'),
+                    end_date_formatted: selectedDates.end.toLocaleDateString('ru-RU'),
+                    duration: Math.ceil((selectedDates.end - selectedDates.start) / (1000 * 60 * 60 * 24)) + 1
                 }));
                 
                 // Закрываем Web App
@@ -118,10 +205,28 @@
             }
         });
         
+        // Обработчик кнопки сброса
+        document.getElementById('resetButton').addEventListener('click', function() {
+            dp.clear();
+            selectedDates.start = null;
+            selectedDates.end = null;
+            document.getElementById('selectionInfo').style.display = 'none';
+            document.getElementById('confirmButton').disabled = true;
+        });
+        
         // Обработка темы Telegram
         function updateTheme() {
             document.body.style.backgroundColor = Telegram.WebApp.backgroundColor;
             document.body.style.color = Telegram.WebApp.textColor;
+            
+            // Обновляем цвета кнопок
+            const buttons = document.querySelectorAll('.button');
+            buttons.forEach(btn => {
+                if (btn.id !== 'resetButton') {
+                    btn.style.backgroundColor = Telegram.WebApp.buttonColor;
+                    btn.style.color = Telegram.WebApp.buttonTextColor;
+                }
+            });
         }
         
         Telegram.WebApp.onEvent('themeChanged', updateTheme);
