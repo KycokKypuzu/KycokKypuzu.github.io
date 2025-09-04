@@ -141,35 +141,23 @@
             transition: all 0.3s ease;
         }
 
+        .button:disabled {
+            background-color: #ccc !important;
+            color: #666 !important;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .button-active {
+            background: var(--tg-theme-button-color, #2481cc) !important;
+            color: var(--tg-theme-button-text-color, #ffffff) !important;
+            opacity: 1 !important;
+            cursor: pointer !important;
+        }
+
         .reset-button {
             background: var(--tg-theme-destructive-color, #ff3b30);
             margin-top: 5px;
-        }
-
-        .warning {
-            text-align: center;
-            color: #e74c3c;
-            font-size: 14px;
-            margin-top: 10px;
-            opacity: 0;
-            height: 0;
-            transition: all 0.3s ease;
-        }
-
-        .warning.show {
-            opacity: 1;
-            height: auto;
-            margin-top: 15px;
-        }
-
-        .pulse {
-            animation: pulse 0.5s ease-in-out;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
         }
     </style>
 </head>
@@ -201,11 +189,7 @@
 
         <div id="datepicker" class="datepicker"></div>
 
-        <div class="warning" id="warningMessage">
-            ⚠️ Сначала выберите даты
-        </div>
-
-        <button class="button" id="confirmButton">
+        <button class="button" id="confirmButton" disabled>
             ✅ Подтвердить даты
         </button>
 
@@ -241,10 +225,7 @@
                 multipleDatesSeparator: ' - ',
                 autoClose: false,
                 onSelect: function({date, formattedDate}) {
-                    console.log('Selected date:', date, 'Formatted:', formattedDate);
                     updateSelection(date);
-                    // Скрываем предупреждение при выборе дат
-                    hideWarning();
                 }
             });
 
@@ -260,25 +241,6 @@
                     }
                 }
             }
-        }
-
-        // Показать предупреждение
-        function showWarning() {
-            const warning = document.getElementById('warningMessage');
-            warning.classList.add('show');
-
-            // Анимация пульсации для кнопки
-            const confirmButton = document.getElementById('confirmButton');
-            confirmButton.classList.add('pulse');
-            setTimeout(() => {
-                confirmButton.classList.remove('pulse');
-            }, 500);
-        }
-
-        // Скрыть предупреждение
-        function hideWarning() {
-            const warning = document.getElementById('warningMessage');
-            warning.classList.remove('show');
         }
 
         // Проверка, можно ли подтвердить выбор
@@ -326,8 +288,6 @@
 
         // Функция обновления выбора
         function updateSelection(date) {
-            console.log('Updating selection with date:', date, 'One day mode:', isOneDayMode);
-
             if (date) {
                 if (isOneDayMode) {
                     // РЕЖИМ ОДНОГО ДНЯ: обе даты одинаковые
@@ -351,13 +311,24 @@
                 selectedDates.end = null;
             }
 
-            console.log('Selected dates:', selectedDates);
             updateInterface();
         }
 
         // Функция обновления интерфейса
         function updateInterface() {
-            console.log('Updating interface, selected dates:', selectedDates);
+            const canConfirmSelection = canConfirm();
+
+            // Обновляем кнопку подтверждения
+            const confirmButton = document.getElementById('confirmButton');
+            if (canConfirmSelection) {
+                confirmButton.disabled = false;
+                confirmButton.classList.add('button-active');
+                confirmButton.classList.remove('button-inactive');
+            } else {
+                confirmButton.disabled = true;
+                confirmButton.classList.remove('button-active');
+                confirmButton.classList.add('button-inactive');
+            }
 
             // Обновляем информацию о выборе
             if (selectedDates.start) {
@@ -408,10 +379,17 @@
             const confirmButton = document.getElementById('confirmButton');
             const resetButton = document.getElementById('resetButton');
 
-            confirmButton.style.backgroundColor = Telegram.WebApp.buttonColor || '#2481cc';
-            confirmButton.style.color = Telegram.WebApp.buttonTextColor || '#ffffff';
-            confirmButton.style.opacity = '1';
-            confirmButton.style.cursor = 'pointer';
+            if (confirmButton.disabled) {
+                confirmButton.style.backgroundColor = '#ccc';
+                confirmButton.style.color = '#666';
+                confirmButton.style.opacity = '0.6';
+                confirmButton.style.cursor = 'not-allowed';
+            } else {
+                confirmButton.style.backgroundColor = Telegram.WebApp.buttonColor || '#2481cc';
+                confirmButton.style.color = Telegram.WebApp.buttonTextColor || '#ffffff';
+                confirmButton.style.opacity = '1';
+                confirmButton.style.cursor = 'pointer';
+            }
 
             resetButton.style.backgroundColor = Telegram.WebApp.destructiveColor || '#ff3b30';
             resetButton.style.color = Telegram.WebApp.buttonTextColor || '#ffffff';
@@ -419,8 +397,6 @@
 
         // Обработчик кнопки подтверждения
         document.getElementById('confirmButton').addEventListener('click', function() {
-            console.log('Confirm button clicked. Selected dates:', selectedDates, 'Can confirm:', canConfirm());
-
             if (canConfirm()) {
                 // Подготавливаем данные для отправки
                 const dataToSend = {
@@ -432,17 +408,11 @@
                     is_one_day: isOneDayMode
                 };
 
-                console.log('Sending data:', dataToSend);
-
                 // Отправляем данные в бот
                 Telegram.WebApp.sendData(JSON.stringify(dataToSend));
 
                 // Закрываем Web App
                 Telegram.WebApp.close();
-            } else {
-                // Показываем предупреждение
-                console.log('Showing warning - cannot confirm');
-                showWarning();
             }
         });
 
@@ -454,6 +424,7 @@
             selectedDates.start = null;
             selectedDates.end = null;
             document.getElementById('selectionInfo').style.display = 'none';
+            document.getElementById('confirmButton').disabled = true;
             document.getElementById('oneDayToggle').checked = false;
             isOneDayMode = false;
 
@@ -464,7 +435,6 @@
             document.getElementById('instructions').textContent = 'Выберите дату начала, затем дату окончания события';
             initDatepicker();
             updateButtonStyles();
-            hideWarning();
         });
 
         // Обработка темы Telegram
