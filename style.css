@@ -36,16 +36,14 @@ h1 {
 .toggle-container {
     display: flex;
     align-items: center;
-    justify-content: space-between; /* Распределяем элементы по ширине */
+    justify-content: center;
     margin-bottom: 20px;
     padding: 12px;
-    background: #f1f1f1 !important;
     border-radius: 12px;
 }
 
 .toggle-label {
     font-size: 14px;
-    color: #666666 !important;
     margin-right: 12px; /* Отступ справа от текста */
 }
 
