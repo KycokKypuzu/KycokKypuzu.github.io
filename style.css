@@ -1,0 +1,176 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding: 20px;
+    background: var(--tg-theme-bg-color, #ffffff);
+    color: var(--tg-theme-text-color, #000000);
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+h1 {
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+.instructions {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: var(--tg-theme-hint-color, #999999);
+}
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Распределяем элементы по ширине */
+    margin-bottom: 20px;
+    padding: 12px;
+    background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+    border-radius: 12px;
+}
+
+.toggle-label {
+    font-size: 14px;
+    color: var(--tg-theme-text-color, #000000);
+    margin-right: 12px; /* Отступ справа от текста */
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--tg-theme-button-color, #2481cc);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.datepicker {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.selection-info {
+    background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.date-range {
+    text-align: center;
+    font-weight: bold;
+    color: var(--tg-theme-link-color, #2481cc);
+    margin-bottom: 10px;
+}
+
+.days-count {
+    text-align: center;
+    font-size: 14px;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+.button {
+    padding: 12px 24px;
+    background: var(--tg-theme-button-color, #2481cc);
+    color: var(--tg-theme-button-text-color, #ffffff);
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.button:disabled {
+    background-color: #6ca1cc !important;
+    color: #000000 !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.button-active {
+    background: var(--tg-theme-button-color, #2481cc) !important;
+    color: var(--tg-theme-button-text-color, #ffffff) !important;
+    opacity: 1 !important;
+    cursor: pointer !important;
+}
+
+button.reset-button {
+    background: #c7c7c7 !important;
+    color: #313131 !important;
+    margin-top: 5px;
+}
+
+.datepicker {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.air-datepicker {
+    margin: 0 auto !important;
+    float: none !important;
+}
+
+/* Для мобильных устройств */
+@media (max-width: 768px) {
+    .air-datepicker {
+        width: 100% !important;
+        max-width: 320px;
+    }
+    
+    .air-datepicker-body--day-name {
+        margin: 0 2px !important;
+    }
+    
+    .air-datepicker-cell {
+        height: 32px !important;
+        margin: 2px !important;
+    }
+}
