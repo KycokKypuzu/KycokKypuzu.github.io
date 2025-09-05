@@ -10,7 +10,7 @@ let selectedDates = {
 let isOneDayMode = false;
 let dp;
 
-// Инициализация календаря
+// Функция инициализации календаря с учетом темы
 function initDatepicker() {
     const container = document.getElementById('datepicker');
     container.innerHTML = ''; // Очищаем контейнер
@@ -24,8 +24,15 @@ function initDatepicker() {
         autoClose: false,
         onSelect: function({date, formattedDate}) {
             updateSelection(date);
+        },
+        onRenderCell: function({date, cellType}) {
+            // Дополнительная кастомизация ячеек если нужно
+            return;
         }
     });
+
+    // Применяем тему после инициализации календаря
+    setTimeout(applyCalendarTheme, 0);
 
     // Восстанавливаем выбранные даты если они есть
     if (selectedDates.start) {
@@ -210,6 +217,22 @@ document.getElementById('confirmButton').addEventListener('click', function() {
     }
 });
 
+// Функция применения темы календаря
+function applyCalendarTheme() {
+    const datepicker = document.querySelector('.air-datepicker');
+    if (!datepicker) return;
+
+    // Удаляем предыдущие классы тем
+    datepicker.classList.remove('air-datepicker-light', 'air-datepicker-dark');
+
+    // Добавляем соответствующий класс темы
+    if (Telegram.WebApp.colorScheme === 'dark') {
+        datepicker.classList.add('air-datepicker-dark');
+    } else {
+        datepicker.classList.add('air-datepicker-light');
+    }
+}
+
 // Обработчик кнопки сброса
 document.getElementById('resetButton').addEventListener('click', function() {
     if (dp) {
@@ -231,12 +254,19 @@ document.getElementById('resetButton').addEventListener('click', function() {
     updateButtonStyles();
 });
 
-// Обработка темы Telegram
+// Обновляем функцию updateTheme
 function updateTheme() {
     document.body.style.backgroundColor = Telegram.WebApp.backgroundColor;
     document.body.style.color = Telegram.WebApp.textColor;
     updateButtonStyles();
+    applyCalendarTheme(); // Добавляем применение темы календаря
 }
 
-Telegram.WebApp.onEvent('themeChanged', updateTheme);
-updateTheme();
+// Обработчик изменения темы
+Telegram.WebApp.onEvent('themeChanged', function() {
+    updateTheme();
+    applyCalendarTheme(); // Применяем тему календаря при изменении темы
+});
+
+// Вызываем при загрузке
+applyCalendarTheme();
