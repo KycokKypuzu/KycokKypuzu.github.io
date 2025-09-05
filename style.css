@@ -7,6 +7,11 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
 }
 
 .container {
@@ -34,7 +39,7 @@ h1 {
     justify-content: space-between; /* Распределяем элементы по ширине */
     margin-bottom: 20px;
     padding: 12px;
-    background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+    background: #f1f1f1 !important;
     border-radius: 12px;
 }
 
@@ -128,7 +133,7 @@ input:checked + .slider:before {
 }
 
 .button:disabled {
-    background-color: #6ca1cc !important;
+    background-color: #5b9ace !important;
     color: #000000 !important;
     opacity: 0.6;
     cursor: not-allowed;
@@ -142,8 +147,8 @@ input:checked + .slider:before {
 }
 
 button.reset-button {
-    background: #c7c7c7 !important;
-    color: #313131 !important;
+    background: #f1f1f1 !important;
+    color: #666666 !important;
     margin-top: 5px;
 }
 
