@@ -3,48 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Выбор дат поездки</title>
+    <title>Выбор дат</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/air-datepicker@3.3.5/air-datepicker.min.css">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: var(--tg-theme-text-color, #000000);
+            font-weight: 600;
+        }
+        
+        .link-card {
+            display: block;
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 16px;
+            text-decoration: none;
+            color: var(--tg-theme-text-color, #000000);
+            transition: all 0.3s ease;
+            border: 1px solid var(--tg-theme-section-border-color, #e0e0e0);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .link-card:hover {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .link-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin: 0;
+        }
+        
+        .link-description {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #666666);
+            margin: 8px 0 0 0;
+        }
+        
+        .link-card:hover .link-description {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 15px;
+            }
+            
+            h1 {
+                font-size: 20px;
+                margin-bottom: 25px;
+            }
+            
+            .link-card {
+                padding: 18px;
+                margin: 12px 0;
+            }
+            
+            .link-title {
+                font-size: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Выберите даты поездки</h1>
-
-        <div class="instructions" id="instructions">
-            Выберите дату начала, затем дату окончания события
-        </div>
-
-        <div class="toggle-container">
-            <span class="toggle-label" id="vacationLabel">Отпуск на один день</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="oneDayToggle">
-                <span class="slider"></span>
-            </label>
-        </div>
-
-        <div id="datepicker" class="datepicker"></div>
-
-        <div class="selection-info" id="selectionInfo" style="display: none;">
-            <div class="date-range" id="dateRange">
-                Дата начала - Дата окончания
-            </div>
-            <div class="days-count" id="daysCount">
-                Продолжительность: 0 дней
-            </div>
-        </div>
-
-        <button class="button" id="confirmButton" disabled>
-            Подтвердить даты
-        </button>
-
-        <button class="button reset-button" id="resetButton">
-            Сбросить выбор
-        </button>
+        <a href="https://kycokkypuzu.github.io/choose_range_date" class="link-card">
+            <h2 class="link-title">Выбор диапазона дат</h2>
+            <p class="link-description">Выберите начальную и конечную даты периода</p>
+        </a>
+        
+        <a href="https://kycokkypuzu.github.io/choose_single_date" class="link-card">
+            <h2 class="link-title">Выбор единственной даты</h2>
+            <p class="link-description">Выберите одну конкретную дату</p>
+        </a>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/air-datepicker@3.3.5/air-datepicker.min.js"></script>
-    <script src="script.js"></script>
 </body>
 </html>

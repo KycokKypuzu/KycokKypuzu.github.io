@@ -3,40 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Выбор дат поездки</title>
+    <title>Выбор даты события</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/air-datepicker@3.3.5/air-datepicker.min.css">
-    <link rel="stylesheet" href="choose_range_date_style.css">
+    <link rel="stylesheet" href="choose_single_date_style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Выберите даты поездки</h1>
+        <h1>Выберите дату события</h1>
 
         <div class="instructions" id="instructions">
-            Выберите дату начала, затем дату окончания события
-        </div>
-
-        <div class="toggle-container">
-            <span class="toggle-label" id="vacationLabel">Отпуск на один день</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="oneDayToggle">
-                <span class="slider"></span>
-            </label>
+            Выберите дату события
         </div>
 
         <div id="datepicker" class="datepicker"></div>
 
         <div class="selection-info" id="selectionInfo" style="display: none;">
             <div class="date-range" id="dateRange">
-                Дата начала - Дата окончания
-            </div>
-            <div class="days-count" id="daysCount">
-                Продолжительность: 0 дней
+                Выбранная дата
             </div>
         </div>
 
         <button class="button" id="confirmButton" disabled>
-            Подтвердить даты
+            Подтвердить дату
         </button>
 
         <button class="button reset-button" id="resetButton">
@@ -45,6 +34,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/air-datepicker@3.3.5/air-datepicker.min.js"></script>
-    <script src="choose_range_date_script.js"></script>
+    <script src="choose_single_date_script.js"></script>
 </body>
 </html>
